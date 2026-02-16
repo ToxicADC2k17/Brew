@@ -34,6 +34,16 @@ class MenuCategory(str, Enum):
     DESSERTS = "Desserts"
     SANDWICHES = "Sandwiches"
     SMOOTHIES = "Smoothies"
+    STARTERS = "Starters"
+    MAINS = "Mains"
+    STEAKS = "Steaks"
+    SEAFOOD = "Seafood"
+    VEGETARIAN = "Vegetarian"
+    SALADS = "Salads"
+    SIDES = "Sides"
+    SOUPS = "Soups"
+    BEERS = "Beers"
+    WINES = "Wines"
 
 # Models
 class MenuItem(BaseModel):
