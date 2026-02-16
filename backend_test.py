@@ -300,19 +300,107 @@ class CafeBillGeneratorAPITester:
             check_response=check_response
         )
 
-    def test_get_bills(self):
-        """Test GET /bills - retrieve all bills"""
+    def test_get_bills_with_search(self):
+        """Test GET /bills with search functionality"""
         def check_response(data):
             if not isinstance(data, list):
                 print(f"   Expected list, got {type(data)}")
                 return False
-            print(f"   Found {len(data)} bills")
+            print(f"   Found {len(data)} bills with customer search")
+            # If we created a bill with "João Silva", it should be in results
+            customer_bills = [b for b in data if b.get('customer_name') == 'João Silva']
+            if customer_bills:
+                print(f"   Found bill for João Silva: #{customer_bills[0].get('bill_number')}")
+            return True
+        
+        # Test search by customer name
+        return self.run_test(
+            "Search Bills by Customer",
+            "GET",
+            "bills?search=João",
+            200,
+            check_response=check_response
+        )
+
+    def test_get_bills_with_date_filter(self):
+        """Test GET /bills with date range filtering"""
+        from datetime import date
+        today = date.today().isoformat()
+        
+        def check_response(data):
+            if not isinstance(data, list):
+                print(f"   Expected list, got {type(data)}")
+                return False
+            print(f"   Found {len(data)} bills for today's date filter")
+            return True
+        
+        # Test search by date range
+        return self.run_test(
+            "Filter Bills by Date",
+            "GET",
+            f"bills?start_date={today}&end_date={today}",
+            200,
+            check_response=check_response
+        )
+
+    def test_get_daily_sales_report(self):
+        """Test GET /reports/daily - daily sales report"""
+        from datetime import date
+        today = date.today().isoformat()
+        
+        def check_response(data):
+            required_fields = ['date', 'total_bills', 'total_revenue', 'total_items_sold', 
+                             'avg_bill_value', 'top_items', 'currency']
+            for field in required_fields:
+                if field not in data:
+                    print(f"   Missing field '{field}' in daily report")
+                    return False
+            
+            print(f"   Daily report for {data['date']}: {data['total_bills']} bills, "
+                  f"${data['total_revenue']} revenue, {len(data['top_items'])} top items")
             return True
         
         return self.run_test(
-            "Get All Bills",
+            "Get Daily Sales Report",
             "GET",
-            "bills",
+            f"reports/daily?date={today}",
+            200,
+            check_response=check_response
+        )
+
+    def test_get_range_sales_report(self):
+        """Test GET /reports/range - date range sales report"""
+        from datetime import date, timedelta
+        today = date.today()
+        week_ago = (today - timedelta(days=7)).isoformat()
+        today_str = today.isoformat()
+        
+        def check_response(data):
+            required_fields = ['start_date', 'end_date', 'total_bills', 'total_revenue', 
+                             'total_items_sold', 'avg_bill_value', 'daily_breakdown', 
+                             'top_items', 'currency']
+            for field in required_fields:
+                if field not in data:
+                    print(f"   Missing field '{field}' in range report")
+                    return False
+            
+            if not isinstance(data['daily_breakdown'], list):
+                print(f"   daily_breakdown should be a list")
+                return False
+            
+            if not isinstance(data['top_items'], list):
+                print(f"   top_items should be a list")
+                return False
+            
+            print(f"   Range report ({data['start_date']} to {data['end_date']}): "
+                  f"{data['total_bills']} bills, ${data['total_revenue']} revenue")
+            print(f"   Daily breakdown entries: {len(data['daily_breakdown'])}")
+            return True
+        
+        return self.run_test(
+            "Get Range Sales Report",
+            "GET",
+            f"reports/range?start_date={week_ago}&end_date={today_str}",
             200,
             check_response=check_response
         )
