@@ -151,7 +151,7 @@ export default function MenuManagement() {
               <DialogTrigger asChild>
                 <Button 
                   onClick={openNewDialog}
-                  className="themed-accent-btn  btn-press"
+                  className="themed-accent-btn text-white  btn-press"
                   data-testid="add-item-btn"
                 >
                   <Plus className="w-4 h-4 mr-2" /> Add Item
