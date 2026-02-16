@@ -99,17 +99,17 @@ export default function MenuManagement() {
     }
 
     try {
+      const itemData = {
+        ...formData,
+        price: parseFloat(formData.price),
+        image_url: formData.image_url || ""
+      };
+
       if (editingId) {
-        await axios.put(`${API}/menu/${editingId}`, {
-          ...formData,
-          price: parseFloat(formData.price)
-        });
+        await axios.put(`${API}/menu/${editingId}`, itemData);
         toast.success("Item updated");
       } else {
-        await axios.post(`${API}/menu`, {
-          ...formData,
-          price: parseFloat(formData.price)
-        });
+        await axios.post(`${API}/menu`, itemData);
         toast.success("Item added");
       }
       setFormData(emptyItem);
