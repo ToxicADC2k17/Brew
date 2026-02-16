@@ -354,6 +354,25 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                 Manage Menu
               </Button>
             </Link>
+            <Link to="/inventory">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10 btn-press"
+                data-testid="inventory-btn"
+              >
+                <Package className="w-4 h-4 mr-2" />
+                Inventory
+              </Button>
+            </Link>
+            <Button 
+              variant="ghost" 
+              onClick={handleLogout}
+              className="text-white hover:bg-white/10 btn-press"
+              data-testid="logout-btn"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
       </header>
