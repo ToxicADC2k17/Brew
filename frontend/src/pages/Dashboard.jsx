@@ -6,24 +6,39 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Coffee, Settings, Plus, Minus, Trash2, Printer, Download, Receipt } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Coffee, Settings, Plus, Minus, Trash2, Printer, Download, Receipt, History, BarChart3 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CATEGORIES = ["All", "Coffee", "Tea", "Pastries", "Snacks", "Beverages"];
+const CURRENCIES = [
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+  { code: "BRL", symbol: "R$", name: "Brazilian Real" },
+  { code: "CHF", symbol: "CHF", name: "Swiss Franc" },
+];
 
 export default function Dashboard() {
   const [menuItems, setMenuItems] = useState([]);
+  const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [orderItems, setOrderItems] = useState([]);
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [taxPercent, setTaxPercent] = useState(5);
+  const [taxPercent, setTaxPercent] = useState(23); // Portugal IVA
+  const [currency, setCurrency] = useState("EUR");
+  const [customerName, setCustomerName] = useState("");
+  const [tableNumber, setTableNumber] = useState("");
+  const [nif, setNif] = useState("");
   const [loading, setLoading] = useState(true);
   const [generatedBill, setGeneratedBill] = useState(null);
   const billRef = useRef(null);
 
+  const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || "€";
+
   useEffect(() => {
     fetchMenu();
+    fetchCategories();
   }, []);
 
   const fetchMenu = async () => {
@@ -34,6 +49,15 @@ export default function Dashboard() {
       toast.error("Failed to load menu");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(`${API}/menu/categories`);
+      setCategories(["All", ...res.data]);
+    } catch (err) {
+      console.error("Failed to load categories");
     }
   };
 
@@ -79,6 +103,9 @@ export default function Dashboard() {
   const clearOrder = () => {
     setOrderItems([]);
     setDiscountPercent(0);
+    setCustomerName("");
+    setTableNumber("");
+    setNif("");
     setGeneratedBill(null);
     toast.info("Order cleared");
   };
@@ -98,7 +125,11 @@ export default function Dashboard() {
       const res = await axios.post(`${API}/bills`, {
         items: orderItems,
         discount_percent: discountPercent,
-        tax_percent: taxPercent
+        tax_percent: taxPercent,
+        customer_name: customerName,
+        table_number: tableNumber,
+        nif: nif,
+        currency: currency
       });
       setGeneratedBill(res.data);
       toast.success(`Bill #${res.data.bill_number} generated!`);
@@ -110,18 +141,20 @@ export default function Dashboard() {
   const printBill = () => {
     if (billRef.current) {
       const printContent = billRef.current.innerHTML;
-      const printWindow = window.open('', '', 'width=400,height=600');
+      const printWindow = window.open('', '', 'width=400,height=700');
       printWindow.document.write(`
         <html>
           <head>
             <title>Bill #${generatedBill?.bill_number || 'Receipt'}</title>
             <style>
-              body { font-family: 'Courier New', monospace; padding: 20px; max-width: 300px; margin: 0 auto; }
-              .header { text-align: center; margin-bottom: 20px; }
+              body { font-family: 'Courier New', monospace; padding: 20px; max-width: 300px; margin: 0 auto; font-size: 12px; }
+              .header { text-align: center; margin-bottom: 15px; }
+              .header h2 { margin: 0; font-size: 18px; }
+              .info { margin: 10px 0; }
               .line { border-top: 1px dashed #000; margin: 10px 0; }
               .item { display: flex; justify-content: space-between; margin: 5px 0; }
-              .total { font-weight: bold; font-size: 1.2em; }
-              .footer { text-align: center; margin-top: 20px; font-size: 0.9em; }
+              .total { font-weight: bold; font-size: 14px; }
+              .footer { text-align: center; margin-top: 15px; font-size: 11px; }
             </style>
           </head>
           <body>${printContent}</body>
@@ -134,22 +167,28 @@ export default function Dashboard() {
 
   const downloadBill = () => {
     if (!generatedBill) return;
+    const sym = CURRENCIES.find(c => c.code === generatedBill.currency)?.symbol || "€";
     const billText = `
-=============================
-       CAFE BREW HOUSE
-=============================
+========================================
+           CAFE BREW HOUSE
+========================================
 Bill #: ${generatedBill.bill_number}
 Date: ${new Date(generatedBill.created_at).toLocaleString()}
------------------------------
-${generatedBill.items.map(i => `${i.name} x${i.quantity}\n  $${(i.price * i.quantity).toFixed(2)}`).join('\n')}
------------------------------
-Subtotal:    $${generatedBill.subtotal.toFixed(2)}
-Discount(${generatedBill.discount_percent}%): -$${generatedBill.discount_amount.toFixed(2)}
-Tax(${generatedBill.tax_percent}%):     $${generatedBill.tax_amount.toFixed(2)}
-=============================
-TOTAL:       $${generatedBill.total.toFixed(2)}
-=============================
-     Thank you for visiting!
+${generatedBill.customer_name ? `Customer: ${generatedBill.customer_name}` : ''}
+${generatedBill.table_number ? `Table: ${generatedBill.table_number}` : ''}
+${generatedBill.nif ? `NIF: ${generatedBill.nif}` : ''}
+----------------------------------------
+ITEMS:
+${generatedBill.items.map(i => `${i.name} x${i.quantity}\n  ${sym}${(i.price * i.quantity).toFixed(2)}`).join('\n')}
+----------------------------------------
+Subtotal:      ${sym}${generatedBill.subtotal.toFixed(2)}
+${generatedBill.discount_percent > 0 ? `Discount(${generatedBill.discount_percent}%): -${sym}${generatedBill.discount_amount.toFixed(2)}` : ''}
+IVA/Tax(${generatedBill.tax_percent}%): ${sym}${generatedBill.tax_amount.toFixed(2)}
+========================================
+TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
+========================================
+        Thank you for visiting!
+         Cafe Brew House
     `;
     const blob = new Blob([billText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -172,16 +211,38 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
               Cafe Brew House
             </h1>
           </div>
-          <Link to="/manage">
-            <Button 
-              variant="outline" 
-              className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
-              data-testid="manage-menu-btn"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Manage Menu
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/history">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10 btn-press"
+                data-testid="bill-history-btn"
+              >
+                <History className="w-4 h-4 mr-2" />
+                History
+              </Button>
+            </Link>
+            <Link to="/reports">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10 btn-press"
+                data-testid="sales-report-btn"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Reports
+              </Button>
+            </Link>
+            <Link to="/manage">
+              <Button 
+                variant="outline" 
+                className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
+                data-testid="manage-menu-btn"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Manage Menu
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -192,7 +253,7 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
           <div className="lg:col-span-8">
             {/* Category Filter */}
             <div className="flex flex-wrap gap-2 mb-6" data-testid="category-filter">
-              {CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
@@ -225,7 +286,7 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
                           {item.name}
                         </h3>
                         <span className="price-tag text-[#D97706] font-semibold">
-                          ${item.price.toFixed(2)}
+                          {currencySymbol}{item.price.toFixed(2)}
                         </span>
                       </div>
                       <p className="text-muted-foreground text-sm mb-3">{item.description}</p>
@@ -249,9 +310,21 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
           {/* Bill Panel */}
           <div className="lg:col-span-4">
             <div className="bill-panel sticky top-4 p-6" data-testid="bill-panel">
-              <div className="flex items-center gap-2 mb-4">
-                <Receipt className="w-5 h-5 text-[#D97706]" />
-                <h2 className="text-xl font-bold" style={{ fontFamily: 'Manrope' }}>Current Order</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-[#D97706]" />
+                  <h2 className="text-xl font-bold" style={{ fontFamily: 'Manrope' }}>Current Order</h2>
+                </div>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger className="w-24 h-8" data-testid="currency-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map(c => (
+                      <SelectItem key={c.code} value={c.code}>{c.symbol} {c.code}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {orderItems.length === 0 ? (
@@ -262,13 +335,13 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
                 </div>
               ) : (
                 <>
-                  <ScrollArea className="h-[300px] pr-4">
+                  <ScrollArea className="h-[200px] pr-4">
                     {orderItems.map(item => (
                       <div key={item.menu_item_id} className="flex items-center justify-between py-3 border-b border-border" data-testid={`order-item-${item.menu_item_id}`}>
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.name}</p>
                           <p className="price-tag text-xs text-muted-foreground">
-                            ${item.price.toFixed(2)} each
+                            {currencySymbol}{item.price.toFixed(2)} each
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -301,9 +374,45 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
 
                   <Separator className="my-4" />
 
-                  {/* Discount Input */}
+                  {/* Customer Info */}
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-muted-foreground w-20">Customer</label>
+                      <Input 
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Name (optional)"
+                        className="h-8 text-sm"
+                        data-testid="customer-name-input"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-muted-foreground w-20">Table #</label>
+                      <Input 
+                        value={tableNumber}
+                        onChange={(e) => setTableNumber(e.target.value)}
+                        placeholder="Table (optional)"
+                        className="h-8 text-sm"
+                        data-testid="table-number-input"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm text-muted-foreground w-20">NIF</label>
+                      <Input 
+                        value={nif}
+                        onChange={(e) => setNif(e.target.value)}
+                        placeholder="NIF (optional)"
+                        className="h-8 text-sm price-tag"
+                        data-testid="nif-input"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  {/* Discount & Tax */}
                   <div className="flex items-center gap-3 mb-3">
-                    <label className="text-sm text-muted-foreground w-24">Discount %</label>
+                    <label className="text-sm text-muted-foreground w-20">Discount %</label>
                     <Input 
                       type="number"
                       min="0"
@@ -313,24 +422,23 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
                         setGeneratedBill(null);
                         setDiscountPercent(Math.min(100, Math.max(0, Number(e.target.value))));
                       }}
-                      className="price-tag h-9"
+                      className="price-tag h-8"
                       data-testid="discount-input"
                     />
                   </div>
 
-                  {/* Tax Input */}
                   <div className="flex items-center gap-3 mb-4">
-                    <label className="text-sm text-muted-foreground w-24">Tax %</label>
+                    <label className="text-sm text-muted-foreground w-20">Tax/IVA %</label>
                     <Input 
                       type="number"
                       min="0"
-                      max="50"
+                      max="100"
                       value={taxPercent}
                       onChange={(e) => {
                         setGeneratedBill(null);
-                        setTaxPercent(Math.min(50, Math.max(0, Number(e.target.value))));
+                        setTaxPercent(Math.min(100, Math.max(0, Number(e.target.value))));
                       }}
-                      className="price-tag h-9"
+                      className="price-tag h-8"
                       data-testid="tax-input"
                     />
                   </div>
@@ -341,22 +449,22 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
                   <div className="space-y-2 price-tag text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>{currencySymbol}{subtotal.toFixed(2)}</span>
                     </div>
                     {discountPercent > 0 && (
                       <div className="flex justify-between text-green-700">
                         <span>Discount ({discountPercent}%)</span>
-                        <span>-${discountAmount.toFixed(2)}</span>
+                        <span>-{currencySymbol}{discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tax ({taxPercent}%)</span>
-                      <span>${taxAmount.toFixed(2)}</span>
+                      <span className="text-muted-foreground">IVA/Tax ({taxPercent}%)</span>
+                      <span>{currencySymbol}{taxAmount.toFixed(2)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span className="text-[#D97706]">${total.toFixed(2)}</span>
+                      <span className="text-[#D97706]">{currencySymbol}{total.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -411,23 +519,31 @@ TOTAL:       $${generatedBill.total.toFixed(2)}
                     <p>Bill #{generatedBill.bill_number}</p>
                     <p>{new Date(generatedBill.created_at).toLocaleString()}</p>
                   </div>
+                  {(generatedBill.customer_name || generatedBill.table_number || generatedBill.nif) && (
+                    <div className="info">
+                      {generatedBill.customer_name && <p>Customer: {generatedBill.customer_name}</p>}
+                      {generatedBill.table_number && <p>Table: {generatedBill.table_number}</p>}
+                      {generatedBill.nif && <p>NIF: {generatedBill.nif}</p>}
+                    </div>
+                  )}
                   <div className="line"></div>
                   {generatedBill.items.map((item, idx) => (
                     <div key={idx} className="item">
                       <span>{item.name} x{item.quantity}</span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      <span>{CURRENCIES.find(c => c.code === generatedBill.currency)?.symbol || "€"}{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                   <div className="line"></div>
-                  <div className="item"><span>Subtotal</span><span>${generatedBill.subtotal.toFixed(2)}</span></div>
+                  <div className="item"><span>Subtotal</span><span>{CURRENCIES.find(c => c.code === generatedBill.currency)?.symbol || "€"}{generatedBill.subtotal.toFixed(2)}</span></div>
                   {generatedBill.discount_percent > 0 && (
-                    <div className="item"><span>Discount ({generatedBill.discount_percent}%)</span><span>-${generatedBill.discount_amount.toFixed(2)}</span></div>
+                    <div className="item"><span>Discount ({generatedBill.discount_percent}%)</span><span>-{CURRENCIES.find(c => c.code === generatedBill.currency)?.symbol || "€"}{generatedBill.discount_amount.toFixed(2)}</span></div>
                   )}
-                  <div className="item"><span>Tax ({generatedBill.tax_percent}%)</span><span>${generatedBill.tax_amount.toFixed(2)}</span></div>
+                  <div className="item"><span>IVA/Tax ({generatedBill.tax_percent}%)</span><span>{CURRENCIES.find(c => c.code === generatedBill.currency)?.symbol || "€"}{generatedBill.tax_amount.toFixed(2)}</span></div>
                   <div className="line"></div>
-                  <div className="item total"><span>TOTAL</span><span>${generatedBill.total.toFixed(2)}</span></div>
+                  <div className="item total"><span>TOTAL</span><span>{CURRENCIES.find(c => c.code === generatedBill.currency)?.symbol || "€"}{generatedBill.total.toFixed(2)}</span></div>
                   <div className="footer">
                     <p>Thank you for visiting!</p>
+                    <p>Cafe Brew House</p>
                   </div>
                 </div>
               )}
