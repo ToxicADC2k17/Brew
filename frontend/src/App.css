@@ -1,8 +1,52 @@
 /* Espresso & Crema Theme - Cafe Bill Generator */
 
+/* CSS Theme Variables - Applied from backend */
+:root {
+  --theme-primary: #2C1A1D;
+  --theme-accent: #D97706;
+  --theme-background: #FDFCF8;
+  --theme-card: #FFFFFF;
+  --theme-text: #2C1A1D;
+  --theme-muted: #6B5E5F;
+  --theme-border: #E5E0D8;
+}
+
 /* Main layout */
 .app-container {
     min-height: 100vh;
+    background-color: var(--theme-background);
+}
+
+/* Dynamic theme header */
+.themed-header {
+    background-color: var(--theme-primary);
+}
+
+/* Dynamic theme accent button */
+.themed-accent-btn {
+    background-color: var(--theme-accent);
+}
+.themed-accent-btn:hover {
+    opacity: 0.9;
+}
+
+/* Dynamic theme card */
+.themed-card {
+    background-color: var(--theme-card);
+    border-color: var(--theme-border);
+}
+
+/* Dynamic theme text */
+.themed-text {
+    color: var(--theme-text);
+}
+
+.themed-muted {
+    color: var(--theme-muted);
+}
+
+.themed-accent {
+    color: var(--theme-accent);
 }
 
 /* Category pills */
@@ -10,7 +54,8 @@
     @apply px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200;
 }
 .category-pill.active {
-    @apply bg-primary text-primary-foreground;
+    background-color: var(--theme-accent);
+    color: white;
 }
 .category-pill.inactive {
     @apply bg-muted text-muted-foreground hover:bg-secondary;
