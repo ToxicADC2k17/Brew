@@ -217,15 +217,15 @@ class CafeBillGeneratorAPITester:
             check_response=check_response
         )
 
-    def test_create_bill(self):
-        """Test POST /bills - generate bill"""
+    def test_create_bill_enhanced(self):
+        """Test POST /bills - generate bill with customer info, currency, and high tax"""
         # First get some menu items for the bill
-        success, menu_data = self.run_test("Get menu for billing", "GET", "menu", 200)
+        success, menu_data = self.run_test("Get menu for enhanced billing", "GET", "menu", 200)
         if not success or not menu_data:
             print("❌ Cannot test billing - menu not available")
             return False, {}
         
-        # Create bill with first two items
+        # Create bill with first two items and enhanced fields
         bill_items = [
             {
                 "menu_item_id": menu_data[0]['id'],
@@ -243,20 +243,42 @@ class CafeBillGeneratorAPITester:
         
         bill_data = {
             "items": bill_items,
-            "discount_percent": 10.0,
-            "tax_percent": 8.5
+            "discount_percent": 15.0,
+            "tax_percent": 85.0,  # Test high tax rate (up to 100%)
+            "customer_name": "João Silva",
+            "table_number": "T12",
+            "nif": "123456789",
+            "currency": "USD"  # Test non-EUR currency
         }
         
         def check_response(data):
             required_fields = ['id', 'items', 'subtotal', 'discount_percent', 
                              'discount_amount', 'tax_percent', 'tax_amount', 
-                             'total', 'bill_number']
+                             'total', 'bill_number', 'customer_name', 
+                             'table_number', 'nif', 'currency']
             for field in required_fields:
                 if field not in data:
                     print(f"   Missing field '{field}' in bill response")
                     return False
             
-            # Check calculations
+            # Check enhanced fields
+            if data['customer_name'] != bill_data['customer_name']:
+                print(f"   Customer name mismatch: expected {bill_data['customer_name']}, got {data['customer_name']}")
+                return False
+            if data['table_number'] != bill_data['table_number']:
+                print(f"   Table number mismatch: expected {bill_data['table_number']}, got {data['table_number']}")
+                return False
+            if data['nif'] != bill_data['nif']:
+                print(f"   NIF mismatch: expected {bill_data['nif']}, got {data['nif']}")
+                return False
+            if data['currency'] != bill_data['currency']:
+                print(f"   Currency mismatch: expected {bill_data['currency']}, got {data['currency']}")
+                return False
+            if data['tax_percent'] != bill_data['tax_percent']:
+                print(f"   Tax percent mismatch: expected {bill_data['tax_percent']}, got {data['tax_percent']}")
+                return False
+            
+            # Check calculations with high tax
             expected_subtotal = sum(item['price'] * item['quantity'] for item in bill_items)
             if abs(data['subtotal'] - expected_subtotal) > 0.01:
                 print(f"   Subtotal mismatch: expected {expected_subtotal}, got {data['subtotal']}")
@@ -264,11 +286,13 @@ class CafeBillGeneratorAPITester:
             
             # Store created bill ID
             self.created_bills.append(data['id'])
-            print(f"   Created bill #{data['bill_number']} with total ${data['total']}")
+            print(f"   Created enhanced bill #{data['bill_number']} with total ${data['total']} {data['currency']}")
+            print(f"   Customer: {data['customer_name']}, Table: {data['table_number']}, NIF: {data['nif']}")
+            print(f"   Tax: {data['tax_percent']}% = ${data['tax_amount']}")
             return True
         
         return self.run_test(
-            "Create Bill",
+            "Create Enhanced Bill",
             "POST",
             "bills",
             200,
