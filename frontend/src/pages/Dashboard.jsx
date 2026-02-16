@@ -423,7 +423,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
             <div className="bill-panel sticky top-4 p-6" data-testid="bill-panel">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-[#D97706]" />
+                  <Receipt className="w-5 h-5 themed-accent" />
                   <h2 className="text-xl font-bold" style={{ fontFamily: 'Manrope' }}>Current Order</h2>
                 </div>
                 <Select value={currency} onValueChange={setCurrency}>
