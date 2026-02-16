@@ -157,11 +157,14 @@ export default function MenuManagement() {
                   <Plus className="w-4 h-4 mr-2" /> Add Item
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md" aria-describedby="menu-item-form-description">
                 <DialogHeader>
                   <DialogTitle style={{ fontFamily: 'Manrope' }}>
                     {editingId ? "Edit Menu Item" : "Add Menu Item"}
                   </DialogTitle>
+                  <p id="menu-item-form-description" className="sr-only">
+                    Fill out the form to {editingId ? "edit" : "add"} a menu item
+                  </p>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                   <div className="space-y-2">
