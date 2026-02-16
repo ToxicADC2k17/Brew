@@ -932,6 +932,19 @@ async def seed_data():
         theme_data["id"] = "theme"
         await db.config.insert_one(theme_data)
         logging.info("Seeded default theme")
+    
+    # Seed default admin user
+    admin = await db.users.find_one({"email": "admin@cafebrew.com"})
+    if not admin:
+        admin_user = User(
+            email="admin@cafebrew.com",
+            name="Admin",
+            role=UserRole.ADMIN
+        )
+        admin_doc = admin_user.model_dump()
+        admin_doc["hashed_password"] = get_password_hash("admin123")
+        await db.users.insert_one(admin_doc)
+        logging.info("Seeded default admin user: admin@cafebrew.com / admin123")
 
 # Image Upload Route
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
