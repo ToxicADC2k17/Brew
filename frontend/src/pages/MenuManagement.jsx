@@ -13,7 +13,7 @@ import { Coffee, ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CATEGORIES = ["Coffee", "Tea", "Pastries", "Snacks", "Beverages"];
+const CATEGORIES = ["Coffee", "Tea", "Pastries", "Snacks", "Beverages", "Breakfast", "Lunch", "Desserts", "Sandwiches", "Smoothies"];
 
 const emptyItem = {
   name: "",
