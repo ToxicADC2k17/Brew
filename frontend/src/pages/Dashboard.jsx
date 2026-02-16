@@ -84,21 +84,77 @@ export default function Dashboard() {
     : menuItems.filter(item => item.category === selectedCategory);
 
   const addToOrder = (item) => {
+    // Check if item has modifiers
+    const itemModifiers = modifiers.filter(m => 
+      item.modifiers && item.modifiers.includes(m.id)
+    );
+    
+    if (itemModifiers.length > 0) {
+      setSelectedItem(item);
+      setSelectedModifiers({});
+      setIsModifierDialogOpen(true);
+    } else {
+      addItemDirectly(item, []);
+    }
+  };
+
+  const addItemDirectly = (item, selectedMods) => {
     setGeneratedBill(null);
-    const existing = orderItems.find(o => o.menu_item_id === item.id);
+    const modifierKey = selectedMods.map(m => `${m.modifier_name}:${m.option_name}`).sort().join("|");
+    const itemKey = `${item.id}-${modifierKey}`;
+    
+    const existing = orderItems.find(o => o.menu_item_id === itemKey);
     if (existing) {
       setOrderItems(orderItems.map(o => 
-        o.menu_item_id === item.id ? { ...o, quantity: o.quantity + 1 } : o
+        o.menu_item_id === itemKey ? { ...o, quantity: o.quantity + 1 } : o
       ));
     } else {
       setOrderItems([...orderItems, {
-        menu_item_id: item.id,
+        menu_item_id: itemKey,
         name: item.name,
         price: item.price,
-        quantity: 1
+        quantity: 1,
+        modifiers: selectedMods
       }]);
     }
     toast.success(`Added ${item.name}`);
+  };
+
+  const confirmModifiers = () => {
+    if (!selectedItem) return;
+    
+    const selectedMods = [];
+    Object.entries(selectedModifiers).forEach(([modId, value]) => {
+      const mod = modifiers.find(m => m.id === modId);
+      if (!mod) return;
+      
+      if (mod.type === "single" && value) {
+        const opt = mod.options.find(o => o.name === value);
+        if (opt) {
+          selectedMods.push({
+            modifier_name: mod.name,
+            option_name: opt.name,
+            price_adjustment: opt.price_adjustment
+          });
+        }
+      } else if (mod.type === "multiple" && Array.isArray(value)) {
+        value.forEach(optName => {
+          const opt = mod.options.find(o => o.name === optName);
+          if (opt) {
+            selectedMods.push({
+              modifier_name: mod.name,
+              option_name: opt.name,
+              price_adjustment: opt.price_adjustment
+            });
+          }
+        });
+      }
+    });
+    
+    addItemDirectly(selectedItem, selectedMods);
+    setIsModifierDialogOpen(false);
+    setSelectedItem(null);
+    setSelectedModifiers({});
   };
 
   const updateQuantity = (itemId, delta) => {
