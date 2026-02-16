@@ -65,9 +65,9 @@ Portuguese cafe/restaurant owners needing a modern billing system with tax compl
 - [x] Dynamic theme customization
 - [x] All 23 categories (including Pizza, Pasta, Burgers)
 
-### P1 (Next)
-- [ ] Image upload functionality for custom menu item photos
-- [ ] Add images to remaining menu items without photos
+### P1 (Completed)
+- [x] Image upload functionality for custom menu item photos
+- [x] Add images to all 335 menu items (was 182 without images)
 
 ### P2 (Future)
 - [ ] Refactor Dashboard.jsx into smaller components (MenuList, BillPanel, ModifierDialog)
