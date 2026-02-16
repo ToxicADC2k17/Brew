@@ -47,6 +47,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetchMenu();
     fetchCategories();
+    fetchModifiers();
   }, []);
 
   const fetchMenu = async () => {
@@ -66,6 +67,15 @@ export default function Dashboard() {
       setCategories(["All", ...res.data]);
     } catch (err) {
       console.error("Failed to load categories");
+    }
+  };
+
+  const fetchModifiers = async () => {
+    try {
+      const res = await axios.get(`${API}/modifiers`);
+      setModifiers(res.data);
+    } catch (err) {
+      console.error("Failed to load modifiers");
     }
   };
 
