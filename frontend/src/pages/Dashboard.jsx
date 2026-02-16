@@ -369,30 +369,49 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                 {filteredItems.map(item => (
                   <div 
                     key={item.id} 
-                    className="menu-item-card menu-card-hover p-4 flex flex-col"
+                    className="menu-item-card menu-card-hover flex flex-col overflow-hidden"
                     data-testid={`menu-item-${item.id}`}
                   >
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-lg text-foreground" style={{ fontFamily: 'Manrope' }}>
-                          {item.name}
-                        </h3>
-                        <span className="price-tag text-[#D97706] font-semibold">
-                          {currencySymbol}{item.price.toFixed(2)}
-                        </span>
+                    {item.image_url && (
+                      <div className="h-32 overflow-hidden bg-muted">
+                        <img 
+                          src={item.image_url} 
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
                       </div>
-                      <p className="text-muted-foreground text-sm mb-3">{item.description}</p>
-                      <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                        {item.category}
-                      </span>
+                    )}
+                    <div className="p-4 flex flex-col flex-1">
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-lg text-foreground" style={{ fontFamily: 'Manrope' }}>
+                            {item.name}
+                          </h3>
+                          <span className="price-tag text-[#D97706] font-semibold">
+                            {currencySymbol}{item.price.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{item.description}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
+                            {item.category}
+                          </span>
+                          {item.modifiers && item.modifiers.length > 0 && (
+                            <span className="inline-block px-2 py-1 bg-[#D97706]/10 text-[#D97706] text-xs rounded">
+                              Customizable
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => addToOrder(item)}
+                        className="mt-4 w-full bg-[#2C1A1D] hover:bg-[#3d2628] btn-press"
+                        data-testid={`add-${item.name.toLowerCase().replace(/\s+/g, '-')}-btn`}
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Add to Order
+                      </Button>
                     </div>
-                    <Button 
-                      onClick={() => addToOrder(item)}
-                      className="mt-4 w-full bg-[#2C1A1D] hover:bg-[#3d2628] btn-press"
-                      data-testid={`add-${item.name.toLowerCase().replace(/\s+/g, '-')}-btn`}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add to Order
-                    </Button>
                   </div>
                 ))}
               </div>
