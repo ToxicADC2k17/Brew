@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Coffee, Settings, Plus, Minus, Trash2, Printer, Download, Receipt, History, BarChart3, Cog, X, Check } from "lucide-react";
+import { Coffee, Settings, Plus, Minus, Trash2, Printer, Download, Receipt, History, BarChart3, Cog, X, Check, Package, LogOut } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -24,6 +24,7 @@ const CURRENCIES = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -38,6 +39,25 @@ export default function Dashboard() {
   const [generatedBill, setGeneratedBill] = useState(null);
   const [modifiers, setModifiers] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
   const [selectedModifiers, setSelectedModifiers] = useState({});
   const [isModifierDialogOpen, setIsModifierDialogOpen] = useState(false);
   const billRef = useRef(null);
