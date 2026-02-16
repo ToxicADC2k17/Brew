@@ -44,6 +44,9 @@ class MenuCategory(str, Enum):
     SOUPS = "Soups"
     BEERS = "Beers"
     WINES = "Wines"
+    PIZZA = "Pizza"
+    PASTA = "Pasta"
+    BURGERS = "Burgers"
 
 # Models
 class ModifierOption(BaseModel):
