@@ -247,10 +247,10 @@ export default function Settings() {
   return (
     <div className="min-h-screen" data-testid="settings-page">
       {/* Header */}
-      <header className="bg-[#2C1A1D] text-white px-6 py-4">
+      <header className="themed-header text-white px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Coffee className="w-8 h-8 text-[#D97706]" />
+            <Coffee className="w-8 h-8 themed-accent" />
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Manrope' }}>
               Settings
             </h1>
@@ -258,7 +258,7 @@ export default function Settings() {
           <Link to="/">
             <Button 
               variant="outline" 
-              className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
+              className="border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-white btn-press"
               data-testid="back-to-billing-btn"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
