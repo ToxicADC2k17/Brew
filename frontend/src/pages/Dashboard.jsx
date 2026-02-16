@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Coffee, Settings, Plus, Minus, Trash2, Printer, Download, Receipt, History, BarChart3 } from "lucide-react";
+import { Coffee, Settings, Plus, Minus, Trash2, Printer, Download, Receipt, History, BarChart3, Cog, X, Check } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
