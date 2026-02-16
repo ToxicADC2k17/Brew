@@ -285,10 +285,10 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
   return (
     <div className="min-h-screen" data-testid="dashboard">
       {/* Header */}
-      <header className="bg-[#2C1A1D] text-white px-6 py-4">
+      <header className="themed-header text-white px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Coffee className="w-8 h-8 text-[#D97706]" />
+            <Coffee className="w-8 h-8 themed-accent" />
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Manrope' }}>
               Cafe Brew House
             </h1>
@@ -327,7 +327,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
             <Link to="/manage">
               <Button 
                 variant="outline" 
-                className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
+                className="border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-white btn-press"
                 data-testid="manage-menu-btn"
               >
                 <Settings className="w-4 h-4 mr-2" />
@@ -388,7 +388,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                           <h3 className="font-bold text-lg text-foreground" style={{ fontFamily: 'Manrope' }}>
                             {item.name}
                           </h3>
-                          <span className="price-tag text-[#D97706] font-semibold">
+                          <span className="price-tag themed-accent font-semibold">
                             {currencySymbol}{item.price.toFixed(2)}
                           </span>
                         </div>
@@ -398,7 +398,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                             {item.category}
                           </span>
                           {item.modifiers && item.modifiers.length > 0 && (
-                            <span className="inline-block px-2 py-1 bg-[#D97706]/10 text-[#D97706] text-xs rounded">
+                            <span className="inline-block px-2 py-1 bg-[var(--theme-accent)]/10 text-[var(--theme-accent)] text-xs rounded">
                               Customizable
                             </span>
                           )}
@@ -406,7 +406,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                       </div>
                       <Button 
                         onClick={() => addToOrder(item)}
-                        className="mt-4 w-full bg-[#2C1A1D] hover:bg-[#3d2628] btn-press"
+                        className="mt-4 w-full bg-[var(--theme-primary)] hover:opacity-90 btn-press"
                         data-testid={`add-${item.name.toLowerCase().replace(/\s+/g, '-')}-btn`}
                       >
                         <Plus className="w-4 h-4 mr-2" /> Add to Order
@@ -452,7 +452,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm">{item.name}</p>
                           {item.modifiers && item.modifiers.length > 0 && (
-                            <p className="text-xs text-[#D97706] truncate">
+                            <p className="text-xs themed-accent truncate">
                               {item.modifiers.map(m => m.option_name).join(", ")}
                             </p>
                           )}
@@ -580,7 +580,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                     <Separator className="my-2" />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
-                      <span className="text-[#D97706]">{currencySymbol}{total.toFixed(2)}</span>
+                      <span className="themed-accent">{currencySymbol}{total.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -588,7 +588,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                   <div className="mt-6 space-y-2">
                     <Button 
                       onClick={generateBill}
-                      className="w-full bg-[#D97706] hover:bg-[#b86505] btn-press"
+                      className="w-full themed-accent-btn text-white btn-press"
                       data-testid="generate-bill-btn"
                     >
                       <Receipt className="w-4 h-4 mr-2" /> Generate Bill
@@ -744,7 +744,7 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
             <Button variant="outline" onClick={() => setIsModifierDialogOpen(false)}>
               <X className="w-4 h-4 mr-2" /> Cancel
             </Button>
-            <Button onClick={confirmModifiers} className="bg-[#D97706] hover:bg-[#b86505]">
+            <Button onClick={confirmModifiers} className="themed-accent-btn text-white">
               <Check className="w-4 h-4 mr-2" /> Add to Order
             </Button>
           </DialogFooter>
