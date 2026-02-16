@@ -597,7 +597,7 @@ export default function Settings() {
                       <DialogClose asChild>
                         <Button variant="outline">Cancel</Button>
                       </DialogClose>
-                      <Button onClick={saveModifier} className="bg-[#2C1A1D] hover:bg-[#3d2628]" data-testid="save-modifier-btn">
+                      <Button onClick={saveModifier} className="bg-[var(--theme-primary)] hover:opacity-90 text-white" data-testid="save-modifier-btn">
                         {editingModifier ? "Update" : "Create"} Modifier
                       </Button>
                     </DialogFooter>
