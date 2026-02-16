@@ -449,10 +449,15 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                   <ScrollArea className="h-[200px] pr-4">
                     {orderItems.map(item => (
                       <div key={item.menu_item_id} className="flex items-center justify-between py-3 border-b border-border" data-testid={`order-item-${item.menu_item_id}`}>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm">{item.name}</p>
+                          {item.modifiers && item.modifiers.length > 0 && (
+                            <p className="text-xs text-[#D97706] truncate">
+                              {item.modifiers.map(m => m.option_name).join(", ")}
+                            </p>
+                          )}
                           <p className="price-tag text-xs text-muted-foreground">
-                            {currencySymbol}{item.price.toFixed(2)} each
+                            {currencySymbol}{(item.price + (item.modifiers?.reduce((s, m) => s + m.price_adjustment, 0) || 0)).toFixed(2)} each
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
