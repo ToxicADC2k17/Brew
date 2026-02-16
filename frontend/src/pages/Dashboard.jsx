@@ -667,6 +667,89 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
           </div>
         </div>
       </main>
+
+      {/* Modifier Selection Dialog */}
+      <Dialog open={isModifierDialogOpen} onOpenChange={setIsModifierDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'Manrope' }}>
+              Customize {selectedItem?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {selectedItem && modifiers
+              .filter(m => selectedItem.modifiers?.includes(m.id))
+              .map(mod => (
+                <div key={mod.id} className="space-y-3">
+                  <Label className="font-semibold flex items-center gap-2">
+                    {mod.name}
+                    {mod.required && <span className="text-xs text-destructive">*Required</span>}
+                  </Label>
+                  {mod.type === "single" ? (
+                    <RadioGroup 
+                      value={selectedModifiers[mod.id] || ""} 
+                      onValueChange={(val) => setSelectedModifiers({...selectedModifiers, [mod.id]: val})}
+                    >
+                      {mod.options.map((opt, idx) => (
+                        <div key={idx} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value={opt.name} id={`${mod.id}-${idx}`} />
+                            <Label htmlFor={`${mod.id}-${idx}`} className="cursor-pointer">
+                              {opt.name}
+                            </Label>
+                          </div>
+                          {opt.price_adjustment !== 0 && (
+                            <span className="text-sm font-mono text-muted-foreground">
+                              {opt.price_adjustment > 0 ? "+" : ""}{currencySymbol}{opt.price_adjustment.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  ) : (
+                    <div className="space-y-2">
+                      {mod.options.map((opt, idx) => (
+                        <div key={idx} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Checkbox 
+                              id={`${mod.id}-${idx}`}
+                              checked={(selectedModifiers[mod.id] || []).includes(opt.name)}
+                              onCheckedChange={(checked) => {
+                                const current = selectedModifiers[mod.id] || [];
+                                setSelectedModifiers({
+                                  ...selectedModifiers, 
+                                  [mod.id]: checked 
+                                    ? [...current, opt.name]
+                                    : current.filter(n => n !== opt.name)
+                                });
+                              }}
+                            />
+                            <Label htmlFor={`${mod.id}-${idx}`} className="cursor-pointer">
+                              {opt.name}
+                            </Label>
+                          </div>
+                          {opt.price_adjustment !== 0 && (
+                            <span className="text-sm font-mono text-muted-foreground">
+                              +{currencySymbol}{opt.price_adjustment.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModifierDialogOpen(false)}>
+              <X className="w-4 h-4 mr-2" /> Cancel
+            </Button>
+            <Button onClick={confirmModifiers} className="bg-[#D97706] hover:bg-[#b86505]">
+              <Check className="w-4 h-4 mr-2" /> Add to Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
