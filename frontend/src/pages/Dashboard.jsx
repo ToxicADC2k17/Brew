@@ -36,6 +36,10 @@ export default function Dashboard() {
   const [nif, setNif] = useState("");
   const [loading, setLoading] = useState(true);
   const [generatedBill, setGeneratedBill] = useState(null);
+  const [modifiers, setModifiers] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedModifiers, setSelectedModifiers] = useState({});
+  const [isModifierDialogOpen, setIsModifierDialogOpen] = useState(false);
   const billRef = useRef(null);
 
   const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || "€";
