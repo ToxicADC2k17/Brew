@@ -314,6 +314,16 @@ TOTAL:         ${sym}${generatedBill.total.toFixed(2)}
                 Reports
               </Button>
             </Link>
+            <Link to="/settings">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10 btn-press"
+                data-testid="settings-btn"
+              >
+                <Cog className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
             <Link to="/manage">
               <Button 
                 variant="outline" 
