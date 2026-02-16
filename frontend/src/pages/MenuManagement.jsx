@@ -360,6 +360,7 @@ export default function MenuManagement() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
+                    <TableHead className="w-16">Image</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead className="price-tag">Price</TableHead>
@@ -370,6 +371,20 @@ export default function MenuManagement() {
                 <TableBody>
                   {menuItems.map(item => (
                     <TableRow key={item.id} data-testid={`menu-row-${item.id}`}>
+                      <TableCell>
+                        {item.image_url ? (
+                          <img 
+                            src={item.image_url} 
+                            alt={item.name}
+                            className="w-12 h-12 object-cover rounded"
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                            <Image className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{item.name}</p>
