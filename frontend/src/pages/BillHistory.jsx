@@ -99,10 +99,10 @@ TOTAL:         ${sym}${bill.total.toFixed(2)}
   return (
     <div className="min-h-screen" data-testid="bill-history">
       {/* Header */}
-      <header className="bg-[#2C1A1D] text-white px-6 py-4">
+      <header className="themed-header text-white px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Coffee className="w-8 h-8 text-[#D97706]" />
+            <Coffee className="w-8 h-8 themed-accent" />
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Manrope' }}>
               Bill History
             </h1>
@@ -110,7 +110,7 @@ TOTAL:         ${sym}${bill.total.toFixed(2)}
           <Link to="/">
             <Button 
               variant="outline" 
-              className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
+              className="border-[var(--theme-accent)] themed-accent hover:bg-[var(--theme-accent)] hover:text-white btn-press"
               data-testid="back-to-billing-btn"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -160,7 +160,7 @@ TOTAL:         ${sym}${bill.total.toFixed(2)}
             </div>
             <Button 
               onClick={handleSearch}
-              className="bg-[#2C1A1D] hover:bg-[#3d2628]"
+              className="themed-header hover:opacity-90"
               data-testid="search-btn"
             >
               <Search className="w-4 h-4 mr-2" /> Search
@@ -220,7 +220,7 @@ TOTAL:         ${sym}${bill.total.toFixed(2)}
                       <TableCell>{bill.customer_name || "-"}</TableCell>
                       <TableCell>{bill.table_number || "-"}</TableCell>
                       <TableCell className="font-mono text-sm">{bill.nif || "-"}</TableCell>
-                      <TableCell className="text-right font-mono font-semibold text-[#D97706]">
+                      <TableCell className="text-right font-mono font-semibold themed-accent">
                         {getCurrencySymbol(bill.currency)}{bill.total.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -271,7 +271,7 @@ TOTAL:         ${sym}${bill.total.toFixed(2)}
                                 <hr />
                                 <div className="flex justify-between font-bold text-lg">
                                   <span>TOTAL</span>
-                                  <span className="text-[#D97706]">{getCurrencySymbol(bill.currency)}{bill.total.toFixed(2)}</span>
+                                  <span className="themed-accent">{getCurrencySymbol(bill.currency)}{bill.total.toFixed(2)}</span>
                                 </div>
                               </div>
                             </DialogContent>

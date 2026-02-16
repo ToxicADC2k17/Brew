@@ -105,10 +105,10 @@ export default function SalesReport() {
   return (
     <div className="min-h-screen" data-testid="sales-report">
       {/* Header */}
-      <header className="bg-[#2C1A1D] text-white px-6 py-4">
+      <header className="themed-header text-white px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Coffee className="w-8 h-8 text-[#D97706]" />
+            <Coffee className="w-8 h-8 themed-accent" />
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Manrope' }}>
               Sales Reports
             </h1>
@@ -116,7 +116,7 @@ export default function SalesReport() {
           <Link to="/">
             <Button 
               variant="outline" 
-              className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
+              className="border-[var(--theme-accent)] themed-accent hover:bg-[var(--theme-accent)] hover:text-white btn-press"
               data-testid="back-to-billing-btn"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -172,7 +172,7 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Bills</CardTitle>
-                      <Receipt className="w-4 h-4 text-[#D97706]" />
+                      <Receipt className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold" style={{ fontFamily: 'Manrope' }}>
@@ -183,10 +183,10 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-                      <DollarSign className="w-4 h-4 text-[#D97706]" />
+                      <DollarSign className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold font-mono text-[#D97706]">
+                      <div className="text-3xl font-bold font-mono themed-accent">
                         {getCurrencySymbol(dailyReport.currency)}{dailyReport.total_revenue.toFixed(2)}
                       </div>
                     </CardContent>
@@ -194,7 +194,7 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Items Sold</CardTitle>
-                      <ShoppingBag className="w-4 h-4 text-[#D97706]" />
+                      <ShoppingBag className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold" style={{ fontFamily: 'Manrope' }}>
@@ -205,7 +205,7 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Avg Bill Value</CardTitle>
-                      <TrendingUp className="w-4 h-4 text-[#D97706]" />
+                      <TrendingUp className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold font-mono">
@@ -237,7 +237,7 @@ export default function SalesReport() {
                               <TableCell className="font-medium">#{idx + 1}</TableCell>
                               <TableCell>{item.name}</TableCell>
                               <TableCell className="text-right font-mono">{item.quantity}</TableCell>
-                              <TableCell className="text-right font-mono text-[#D97706]">
+                              <TableCell className="text-right font-mono themed-accent">
                                 {getCurrencySymbol(dailyReport.currency)}{item.revenue.toFixed(2)}
                               </TableCell>
                             </TableRow>
@@ -283,7 +283,7 @@ export default function SalesReport() {
               </div>
               <Button 
                 onClick={fetchRangeReport}
-                className="bg-[#2C1A1D] hover:bg-[#3d2628]"
+                className="themed-header hover:opacity-90"
                 data-testid="generate-range-report-btn"
               >
                 Generate Report
@@ -312,7 +312,7 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Bills</CardTitle>
-                      <Receipt className="w-4 h-4 text-[#D97706]" />
+                      <Receipt className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold" style={{ fontFamily: 'Manrope' }}>
@@ -323,10 +323,10 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-                      <DollarSign className="w-4 h-4 text-[#D97706]" />
+                      <DollarSign className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold font-mono text-[#D97706]">
+                      <div className="text-3xl font-bold font-mono themed-accent">
                         {getCurrencySymbol(rangeReport.currency)}{rangeReport.total_revenue.toFixed(2)}
                       </div>
                     </CardContent>
@@ -334,7 +334,7 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Items Sold</CardTitle>
-                      <ShoppingBag className="w-4 h-4 text-[#D97706]" />
+                      <ShoppingBag className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold" style={{ fontFamily: 'Manrope' }}>
@@ -345,7 +345,7 @@ export default function SalesReport() {
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Avg Bill Value</CardTitle>
-                      <TrendingUp className="w-4 h-4 text-[#D97706]" />
+                      <TrendingUp className="w-4 h-4 themed-accent" />
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold font-mono">
@@ -376,7 +376,7 @@ export default function SalesReport() {
                               <TableRow key={idx}>
                                 <TableCell>{day.date}</TableCell>
                                 <TableCell className="text-right font-mono">{day.bills}</TableCell>
-                                <TableCell className="text-right font-mono text-[#D97706]">
+                                <TableCell className="text-right font-mono themed-accent">
                                   {getCurrencySymbol(rangeReport.currency)}{day.revenue.toFixed(2)}
                                 </TableCell>
                               </TableRow>
@@ -407,7 +407,7 @@ export default function SalesReport() {
                                 <TableCell className="font-medium">#{idx + 1}</TableCell>
                                 <TableCell>{item.name}</TableCell>
                                 <TableCell className="text-right font-mono">{item.quantity}</TableCell>
-                                <TableCell className="text-right font-mono text-[#D97706]">
+                                <TableCell className="text-right font-mono themed-accent">
                                   {getCurrencySymbol(rangeReport.currency)}{item.revenue.toFixed(2)}
                                 </TableCell>
                               </TableRow>

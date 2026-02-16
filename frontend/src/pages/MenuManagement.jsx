@@ -121,10 +121,10 @@ export default function MenuManagement() {
   return (
     <div className="min-h-screen" data-testid="menu-management">
       {/* Header */}
-      <header className="bg-[#2C1A1D] text-white px-6 py-4">
+      <header className="themed-header text-white px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Coffee className="w-8 h-8 text-[#D97706]" />
+            <Coffee className="w-8 h-8 themed-accent" />
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Manrope' }}>
               Menu Management
             </h1>
@@ -132,7 +132,7 @@ export default function MenuManagement() {
           <Link to="/">
             <Button 
               variant="outline" 
-              className="border-[#D97706] text-[#D97706] hover:bg-[#D97706] hover:text-white btn-press"
+              className="border-[var(--theme-accent)] themed-accent hover:bg-[var(--theme-accent)] hover:text-white btn-press"
               data-testid="back-to-billing-btn"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -151,7 +151,7 @@ export default function MenuManagement() {
               <DialogTrigger asChild>
                 <Button 
                   onClick={openNewDialog}
-                  className="bg-[#D97706] hover:bg-[#b86505] btn-press"
+                  className="themed-accent-btn  btn-press"
                   data-testid="add-item-btn"
                 >
                   <Plus className="w-4 h-4 mr-2" /> Add Item
@@ -231,7 +231,7 @@ export default function MenuManagement() {
                     </DialogClose>
                     <Button 
                       type="submit" 
-                      className="bg-[#2C1A1D] hover:bg-[#3d2628]"
+                      className="themed-header hover:opacity-90"
                       data-testid="save-item-btn"
                     >
                       {editingId ? "Update" : "Add"} Item
@@ -277,7 +277,7 @@ export default function MenuManagement() {
                           {item.category}
                         </span>
                       </TableCell>
-                      <TableCell className="price-tag font-medium text-[#D97706]">
+                      <TableCell className="price-tag font-medium themed-accent">
                         ${item.price.toFixed(2)}
                       </TableCell>
                       <TableCell>
