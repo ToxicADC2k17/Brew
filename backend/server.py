@@ -157,6 +157,104 @@ class ThemeConfig(BaseModel):
     success_color: str = "#3F6212"
     error_color: str = "#991B1B"
 
+# User Models
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    MANAGER = "manager"
+    STAFF = "staff"
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    name: str
+    role: UserRole = UserRole.STAFF
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    name: str
+    role: UserRole = UserRole.STAFF
+    is_active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: dict
+
+# Inventory Models
+class Supplier(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    contact_name: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
+    notes: Optional[str] = ""
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class SupplierCreate(BaseModel):
+    name: str
+    contact_name: Optional[str] = ""
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
+    notes: Optional[str] = ""
+
+class InventoryItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    menu_item_id: str
+    menu_item_name: str
+    current_stock: int = 0
+    min_stock_level: int = 10  # Reorder alert threshold
+    max_stock_level: int = 100
+    cost_price: float = 0.0
+    supplier_id: Optional[str] = None
+    supplier_name: Optional[str] = ""
+    unit: str = "units"  # units, kg, liters, etc.
+    last_restocked: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class InventoryCreate(BaseModel):
+    menu_item_id: str
+    current_stock: int = 0
+    min_stock_level: int = 10
+    max_stock_level: int = 100
+    cost_price: float = 0.0
+    supplier_id: Optional[str] = None
+    unit: str = "units"
+
+class InventoryUpdate(BaseModel):
+    current_stock: Optional[int] = None
+    min_stock_level: Optional[int] = None
+    max_stock_level: Optional[int] = None
+    cost_price: Optional[float] = None
+    supplier_id: Optional[str] = None
+    unit: Optional[str] = None
+
+class StockTransaction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    inventory_id: str
+    menu_item_name: str
+    transaction_type: str  # "restock", "sale", "adjustment", "waste"
+    quantity: int
+    previous_stock: int
+    new_stock: int
+    cost_per_unit: Optional[float] = None
+    total_cost: Optional[float] = None
+    notes: Optional[str] = ""
+    created_by: Optional[str] = ""
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class StockAdjustment(BaseModel):
+    quantity: int
+    transaction_type: str  # "restock", "adjustment", "waste"
+    notes: Optional[str] = ""
+
 class ModifierCreate(BaseModel):
     name: str
     type: str = "single"
