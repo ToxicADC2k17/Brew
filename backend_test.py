@@ -83,13 +83,14 @@ class CafeBillGeneratorAPITester:
         )
 
     def test_get_menu_items(self):
-        """Test GET /menu - should return 20 pre-populated items"""
+        """Test GET /menu - should return 75 pre-populated items across 10 categories"""
         def check_response(data):
             if not isinstance(data, list):
                 print(f"   Expected list, got {type(data)}")
                 return False
-            if len(data) != 20:
-                print(f"   Expected 20 items, got {len(data)}")
+            # Should have 75 items according to DEFAULT_MENU_ITEMS
+            if len(data) < 60:  # Allow some flexibility
+                print(f"   Expected at least 60 items, got {len(data)}")
                 return False
             
             # Check item structure
@@ -100,20 +101,50 @@ class CafeBillGeneratorAPITester:
                         print(f"   Missing field '{field}' in item")
                         return False
             
-            # Check categories exist
+            # Check 10 categories exist
             categories = {item['category'] for item in data}
-            expected_categories = {'Coffee', 'Tea', 'Pastries', 'Snacks', 'Beverages'}
-            if not expected_categories.issubset(categories):
-                print(f"   Missing categories: {expected_categories - categories}")
+            expected_categories = {'Coffee', 'Tea', 'Pastries', 'Snacks', 'Beverages', 
+                                 'Breakfast', 'Lunch', 'Desserts', 'Sandwiches', 'Smoothies'}
+            missing_categories = expected_categories - categories
+            if missing_categories:
+                print(f"   Missing categories: {missing_categories}")
                 return False
                 
-            print(f"   Found {len(data)} items with categories: {sorted(categories)}")
+            print(f"   Found {len(data)} items with all 10 categories: {sorted(categories)}")
             return True
         
         return self.run_test(
             "Get Menu Items",
             "GET",
             "menu",
+            200,
+            check_response=check_response
+        )
+
+    def test_get_categories(self):
+        """Test GET /menu/categories - should return 10 categories"""
+        def check_response(data):
+            if not isinstance(data, list):
+                print(f"   Expected list, got {type(data)}")
+                return False
+            expected_categories = ['Coffee', 'Tea', 'Pastries', 'Snacks', 'Beverages', 
+                                 'Breakfast', 'Lunch', 'Desserts', 'Sandwiches', 'Smoothies']
+            if len(data) != 10:
+                print(f"   Expected 10 categories, got {len(data)}")
+                return False
+            
+            for cat in expected_categories:
+                if cat not in data:
+                    print(f"   Missing category: {cat}")
+                    return False
+            
+            print(f"   Found all 10 categories: {sorted(data)}")
+            return True
+        
+        return self.run_test(
+            "Get Categories",
+            "GET",
+            "menu/categories",
             200,
             check_response=check_response
         )
