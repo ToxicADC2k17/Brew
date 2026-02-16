@@ -558,6 +558,36 @@ async def seed_data():
         await db.config.insert_one(theme_data)
         logging.info("Seeded default theme")
 
+# Image Upload Route
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+@api_router.post("/upload/image")
+async def upload_image(file: UploadFile = File(...)):
+    # Validate file extension
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
+    
+    # Read and check file size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Max size: {MAX_FILE_SIZE // (1024*1024)}MB")
+    
+    # Generate unique filename
+    unique_filename = f"{uuid.uuid4().hex}{ext}"
+    file_path = UPLOADS_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Return the URL path
+    return {
+        "filename": unique_filename,
+        "url": f"/api/uploads/{unique_filename}"
+    }
+
 @api_router.get("/")
 async def root():
     return {"message": "Cafe Bill Generator API"}
