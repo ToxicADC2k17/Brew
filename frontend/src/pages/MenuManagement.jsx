@@ -127,6 +127,7 @@ export default function MenuManagement() {
       price: item.price.toString(),
       category: item.category,
       description: item.description || "",
+      image_url: item.image_url || "",
       available: item.available
     });
     setEditingId(item.id);
