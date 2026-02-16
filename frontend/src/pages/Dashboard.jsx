@@ -184,7 +184,15 @@ export default function Dashboard() {
     toast.info("Order cleared");
   };
 
-  const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = orderItems.reduce((sum, item) => {
+    let itemTotal = item.price * item.quantity;
+    if (item.modifiers) {
+      item.modifiers.forEach(mod => {
+        itemTotal += mod.price_adjustment * item.quantity;
+      });
+    }
+    return sum + itemTotal;
+  }, 0);
   const discountAmount = subtotal * (discountPercent / 100);
   const taxableAmount = subtotal - discountAmount;
   const taxAmount = taxableAmount * (taxPercent / 100);
