@@ -5,6 +5,7 @@ import Dashboard from "@/pages/Dashboard";
 import MenuManagement from "@/pages/MenuManagement";
 import BillHistory from "@/pages/BillHistory";
 import SalesReport from "@/pages/SalesReport";
+import Settings from "@/pages/Settings";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/manage" element={<MenuManagement />} />
           <Route path="/history" element={<BillHistory />} />
           <Route path="/reports" element={<SalesReport />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />

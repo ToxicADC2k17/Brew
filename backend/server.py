@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
 from enum import Enum
@@ -46,6 +46,17 @@ class MenuCategory(str, Enum):
     WINES = "Wines"
 
 # Models
+class ModifierOption(BaseModel):
+    name: str
+    price_adjustment: float = 0
+
+class Modifier(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # e.g., "Size", "Cooking", "Extras"
+    type: str = "single"  # single or multiple
+    required: bool = False
+    options: List[ModifierOption]
+
 class MenuItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -53,7 +64,9 @@ class MenuItem(BaseModel):
     price: float
     category: MenuCategory
     description: Optional[str] = ""
+    image_url: Optional[str] = ""
     available: bool = True
+    modifiers: List[str] = []  # List of modifier IDs
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class MenuItemCreate(BaseModel):
@@ -61,20 +74,30 @@ class MenuItemCreate(BaseModel):
     price: float
     category: MenuCategory
     description: Optional[str] = ""
+    image_url: Optional[str] = ""
     available: bool = True
+    modifiers: List[str] = []
 
 class MenuItemUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
     category: Optional[MenuCategory] = None
     description: Optional[str] = None
+    image_url: Optional[str] = None
     available: Optional[bool] = None
+    modifiers: Optional[List[str]] = None
+
+class BillItemModifier(BaseModel):
+    modifier_name: str
+    option_name: str
+    price_adjustment: float
 
 class BillItem(BaseModel):
     menu_item_id: str
     name: str
     price: float
     quantity: int
+    modifiers: List[BillItemModifier] = []
 
 class BillCreate(BaseModel):
     items: List[BillItem]
@@ -102,87 +125,123 @@ class Bill(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     bill_number: int
 
-class DailySalesReport(BaseModel):
-    date: str
-    total_bills: int
-    total_revenue: float
-    total_items_sold: int
-    avg_bill_value: float
-    top_items: List[dict]
-    currency: str
+class ThemeConfig(BaseModel):
+    id: str = "default"
+    name: str = "Espresso & Crema"
+    primary_color: str = "#2C1A1D"
+    accent_color: str = "#D97706"
+    background_color: str = "#FDFCF8"
+    card_color: str = "#FFFFFF"
+    text_color: str = "#2C1A1D"
+    muted_color: str = "#6B5E5F"
+    border_color: str = "#E5E0D8"
+    success_color: str = "#3F6212"
+    error_color: str = "#991B1B"
 
-# Default menu items - Extended with more categories
-DEFAULT_MENU_ITEMS = [
-    # Coffee
-    {"name": "Espresso", "price": 2.50, "category": "Coffee", "description": "Rich & bold single shot"},
-    {"name": "Americano", "price": 3.00, "category": "Coffee", "description": "Espresso with hot water"},
-    {"name": "Cappuccino", "price": 3.50, "category": "Coffee", "description": "Espresso with steamed milk foam"},
-    {"name": "Latte", "price": 4.00, "category": "Coffee", "description": "Espresso with creamy steamed milk"},
-    {"name": "Mocha", "price": 4.50, "category": "Coffee", "description": "Espresso with chocolate & milk"},
-    {"name": "Cold Brew", "price": 3.50, "category": "Coffee", "description": "Slow-steeped, smooth & refreshing"},
-    {"name": "Flat White", "price": 3.80, "category": "Coffee", "description": "Double espresso with velvety milk"},
-    {"name": "Macchiato", "price": 3.00, "category": "Coffee", "description": "Espresso with a dash of foam"},
-    # Tea
-    {"name": "Green Tea", "price": 2.50, "category": "Tea", "description": "Classic Japanese green tea"},
-    {"name": "Earl Grey", "price": 2.50, "category": "Tea", "description": "Black tea with bergamot"},
-    {"name": "Chai Latte", "price": 3.80, "category": "Tea", "description": "Spiced tea with steamed milk"},
-    {"name": "Matcha Latte", "price": 4.50, "category": "Tea", "description": "Premium matcha with milk"},
-    {"name": "Chamomile", "price": 2.50, "category": "Tea", "description": "Calming herbal infusion"},
-    {"name": "English Breakfast", "price": 2.50, "category": "Tea", "description": "Classic strong black tea"},
-    # Pastries
-    {"name": "Croissant", "price": 2.80, "category": "Pastries", "description": "Buttery, flaky French classic"},
-    {"name": "Chocolate Muffin", "price": 2.50, "category": "Pastries", "description": "Rich chocolate chip muffin"},
-    {"name": "Blueberry Scone", "price": 2.80, "category": "Pastries", "description": "Fresh blueberry scone"},
-    {"name": "Cinnamon Roll", "price": 3.20, "category": "Pastries", "description": "Warm cinnamon swirl"},
-    {"name": "Pain au Chocolat", "price": 3.00, "category": "Pastries", "description": "Chocolate-filled croissant"},
-    {"name": "Pastel de Nata", "price": 1.80, "category": "Pastries", "description": "Portuguese custard tart"},
-    {"name": "Almond Croissant", "price": 3.50, "category": "Pastries", "description": "Croissant with almond cream"},
-    # Breakfast
-    {"name": "Avocado Toast", "price": 7.50, "category": "Breakfast", "description": "Smashed avocado on sourdough"},
-    {"name": "Eggs Benedict", "price": 9.50, "category": "Breakfast", "description": "Poached eggs with hollandaise"},
-    {"name": "Pancakes", "price": 8.00, "category": "Breakfast", "description": "Fluffy pancakes with maple syrup"},
-    {"name": "Granola Bowl", "price": 6.50, "category": "Breakfast", "description": "Yogurt with granola & fresh fruit"},
-    {"name": "French Toast", "price": 7.50, "category": "Breakfast", "description": "Brioche with berries & cream"},
-    {"name": "Full English", "price": 12.00, "category": "Breakfast", "description": "Eggs, bacon, sausage, beans, toast"},
-    # Lunch
-    {"name": "Caesar Salad", "price": 9.00, "category": "Lunch", "description": "Crisp romaine with Caesar dressing"},
-    {"name": "Soup of the Day", "price": 5.50, "category": "Lunch", "description": "Fresh homemade soup with bread"},
-    {"name": "Quiche Lorraine", "price": 7.50, "category": "Lunch", "description": "Classic French quiche with salad"},
-    {"name": "Poke Bowl", "price": 11.00, "category": "Lunch", "description": "Fresh salmon with rice & veggies"},
-    {"name": "Pasta Salad", "price": 8.50, "category": "Lunch", "description": "Mediterranean pasta with feta"},
-    # Sandwiches
-    {"name": "Grilled Cheese", "price": 5.50, "category": "Sandwiches", "description": "Classic melted cheese sandwich"},
-    {"name": "Club Sandwich", "price": 8.50, "category": "Sandwiches", "description": "Triple-decker with chicken & bacon"},
-    {"name": "BLT", "price": 7.00, "category": "Sandwiches", "description": "Bacon, lettuce, tomato on toast"},
-    {"name": "Tuna Melt", "price": 7.50, "category": "Sandwiches", "description": "Tuna salad with melted cheese"},
-    {"name": "Veggie Wrap", "price": 7.00, "category": "Sandwiches", "description": "Grilled vegetables in tortilla"},
-    {"name": "Ham & Cheese", "price": 6.00, "category": "Sandwiches", "description": "Classic ham & cheese toastie"},
-    # Snacks
-    {"name": "Chips & Guac", "price": 5.50, "category": "Snacks", "description": "Tortilla chips with guacamole"},
-    {"name": "Cheese Board", "price": 12.00, "category": "Snacks", "description": "Selection of artisan cheeses"},
-    {"name": "Bruschetta", "price": 6.00, "category": "Snacks", "description": "Tomato & basil on toasted bread"},
-    {"name": "Mixed Nuts", "price": 4.00, "category": "Snacks", "description": "Roasted salted mixed nuts"},
-    # Desserts
-    {"name": "Cheesecake", "price": 5.50, "category": "Desserts", "description": "New York style cheesecake"},
-    {"name": "Chocolate Cake", "price": 5.00, "category": "Desserts", "description": "Rich dark chocolate layer cake"},
-    {"name": "Tiramisu", "price": 6.00, "category": "Desserts", "description": "Classic Italian coffee dessert"},
-    {"name": "Apple Pie", "price": 5.00, "category": "Desserts", "description": "Warm apple pie with cream"},
-    {"name": "Ice Cream", "price": 4.00, "category": "Desserts", "description": "Two scoops, choice of flavors"},
-    {"name": "Brownie", "price": 4.50, "category": "Desserts", "description": "Warm chocolate brownie"},
-    # Beverages
-    {"name": "Orange Juice", "price": 3.50, "category": "Beverages", "description": "Fresh squeezed orange juice"},
-    {"name": "Lemonade", "price": 3.00, "category": "Beverages", "description": "House-made lemonade"},
-    {"name": "Sparkling Water", "price": 2.00, "category": "Beverages", "description": "Refreshing sparkling water"},
-    {"name": "Still Water", "price": 1.50, "category": "Beverages", "description": "Premium still water"},
-    {"name": "Apple Juice", "price": 3.00, "category": "Beverages", "description": "Fresh pressed apple juice"},
-    {"name": "Hot Chocolate", "price": 3.50, "category": "Beverages", "description": "Rich Belgian hot chocolate"},
-    # Smoothies
-    {"name": "Berry Blast", "price": 5.50, "category": "Smoothies", "description": "Mixed berries with yogurt"},
-    {"name": "Tropical Paradise", "price": 5.50, "category": "Smoothies", "description": "Mango, pineapple & coconut"},
-    {"name": "Green Machine", "price": 6.00, "category": "Smoothies", "description": "Spinach, banana & apple"},
-    {"name": "Banana Protein", "price": 6.50, "category": "Smoothies", "description": "Banana, peanut butter & protein"},
-    {"name": "Açaí Bowl", "price": 8.00, "category": "Smoothies", "description": "Açaí blend with toppings"},
+class ModifierCreate(BaseModel):
+    name: str
+    type: str = "single"
+    required: bool = False
+    options: List[ModifierOption]
+
+# Default Modifiers
+DEFAULT_MODIFIERS = [
+    {
+        "id": "size",
+        "name": "Size",
+        "type": "single",
+        "required": False,
+        "options": [
+            {"name": "Small", "price_adjustment": -1.00},
+            {"name": "Regular", "price_adjustment": 0},
+            {"name": "Large", "price_adjustment": 1.50},
+            {"name": "Extra Large", "price_adjustment": 2.50}
+        ]
+    },
+    {
+        "id": "cooking",
+        "name": "Cooking Preference",
+        "type": "single",
+        "required": False,
+        "options": [
+            {"name": "Rare", "price_adjustment": 0},
+            {"name": "Medium Rare", "price_adjustment": 0},
+            {"name": "Medium", "price_adjustment": 0},
+            {"name": "Medium Well", "price_adjustment": 0},
+            {"name": "Well Done", "price_adjustment": 0}
+        ]
+    },
+    {
+        "id": "milk",
+        "name": "Milk Option",
+        "type": "single",
+        "required": False,
+        "options": [
+            {"name": "Regular Milk", "price_adjustment": 0},
+            {"name": "Oat Milk", "price_adjustment": 0.50},
+            {"name": "Almond Milk", "price_adjustment": 0.50},
+            {"name": "Soy Milk", "price_adjustment": 0.40},
+            {"name": "Coconut Milk", "price_adjustment": 0.50},
+            {"name": "No Milk", "price_adjustment": 0}
+        ]
+    },
+    {
+        "id": "extras",
+        "name": "Extras",
+        "type": "multiple",
+        "required": False,
+        "options": [
+            {"name": "Extra Cheese", "price_adjustment": 1.50},
+            {"name": "Bacon", "price_adjustment": 2.00},
+            {"name": "Avocado", "price_adjustment": 2.50},
+            {"name": "Fried Egg", "price_adjustment": 1.50},
+            {"name": "Mushrooms", "price_adjustment": 1.50},
+            {"name": "Jalapeños", "price_adjustment": 0.75},
+            {"name": "Extra Sauce", "price_adjustment": 0.50}
+        ]
+    },
+    {
+        "id": "sides",
+        "name": "Side Choice",
+        "type": "single",
+        "required": False,
+        "options": [
+            {"name": "French Fries", "price_adjustment": 0},
+            {"name": "Sweet Potato Fries", "price_adjustment": 1.00},
+            {"name": "Salad", "price_adjustment": 0},
+            {"name": "Rice", "price_adjustment": 0},
+            {"name": "Mashed Potato", "price_adjustment": 0.50},
+            {"name": "Vegetables", "price_adjustment": 0}
+        ]
+    },
+    {
+        "id": "spice",
+        "name": "Spice Level",
+        "type": "single",
+        "required": False,
+        "options": [
+            {"name": "Mild", "price_adjustment": 0},
+            {"name": "Medium", "price_adjustment": 0},
+            {"name": "Hot", "price_adjustment": 0},
+            {"name": "Extra Hot", "price_adjustment": 0}
+        ]
+    }
 ]
+
+# Default Theme
+DEFAULT_THEME = {
+    "id": "default",
+    "name": "Espresso & Crema",
+    "primary_color": "#2C1A1D",
+    "accent_color": "#D97706",
+    "background_color": "#FDFCF8",
+    "card_color": "#FFFFFF",
+    "text_color": "#2C1A1D",
+    "muted_color": "#6B5E5F",
+    "border_color": "#E5E0D8",
+    "success_color": "#3F6212",
+    "error_color": "#991B1B"
+}
 
 # Menu Routes
 @api_router.get("/menu", response_model=List[MenuItem])
@@ -228,15 +287,81 @@ async def delete_menu_item(item_id: str):
         raise HTTPException(status_code=404, detail="Menu item not found")
     return {"message": "Item deleted successfully"}
 
+# Modifier Routes
+@api_router.get("/modifiers")
+async def get_modifiers():
+    modifiers = await db.modifiers.find({}, {"_id": 0}).to_list(100)
+    return modifiers
+
+@api_router.post("/modifiers")
+async def create_modifier(modifier: ModifierCreate):
+    mod = Modifier(**modifier.model_dump())
+    doc = mod.model_dump()
+    await db.modifiers.insert_one(doc)
+    return mod
+
+@api_router.put("/modifiers/{modifier_id}")
+async def update_modifier(modifier_id: str, modifier: ModifierCreate):
+    existing = await db.modifiers.find_one({"id": modifier_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Modifier not found")
+    
+    update_data = modifier.model_dump()
+    await db.modifiers.update_one({"id": modifier_id}, {"$set": update_data})
+    updated = await db.modifiers.find_one({"id": modifier_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/modifiers/{modifier_id}")
+async def delete_modifier(modifier_id: str):
+    result = await db.modifiers.delete_one({"id": modifier_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Modifier not found")
+    return {"message": "Modifier deleted successfully"}
+
+# Theme/Config Routes
+@api_router.get("/config/theme")
+async def get_theme():
+    theme = await db.config.find_one({"id": "theme"}, {"_id": 0})
+    if not theme:
+        return DEFAULT_THEME
+    return theme
+
+@api_router.put("/config/theme")
+async def update_theme(theme: ThemeConfig):
+    theme_data = theme.model_dump()
+    theme_data["id"] = "theme"
+    await db.config.update_one(
+        {"id": "theme"},
+        {"$set": theme_data},
+        upsert=True
+    )
+    return theme_data
+
+@api_router.post("/config/theme/reset")
+async def reset_theme():
+    theme_data = DEFAULT_THEME.copy()
+    theme_data["id"] = "theme"
+    await db.config.update_one(
+        {"id": "theme"},
+        {"$set": theme_data},
+        upsert=True
+    )
+    return theme_data
+
 # Bill Routes
 @api_router.post("/bills", response_model=Bill)
 async def create_bill(bill_data: BillCreate):
-    # Get next bill number
     last_bill = await db.bills.find_one(sort=[("bill_number", -1)])
     bill_number = (last_bill["bill_number"] + 1) if last_bill else 1001
     
-    # Calculate totals
-    subtotal = sum(item.price * item.quantity for item in bill_data.items)
+    # Calculate totals including modifiers
+    subtotal = 0
+    for item in bill_data.items:
+        item_total = item.price * item.quantity
+        for mod in item.modifiers:
+            item_total += mod.price_adjustment * item.quantity
+        subtotal += item_total
+    
     discount_amount = subtotal * (bill_data.discount_percent / 100)
     taxable_amount = subtotal - discount_amount
     tax_amount = taxable_amount * (bill_data.tax_percent / 100)
@@ -324,7 +449,6 @@ async def get_daily_sales_report(date: Optional[str] = None):
     total_revenue = sum(b["total"] for b in bills)
     total_items = sum(sum(i["quantity"] for i in b["items"]) for b in bills)
     
-    # Count item sales
     item_counts = {}
     for bill in bills:
         for item in bill["items"]:
@@ -372,7 +496,6 @@ async def get_sales_report_range(start_date: str, end_date: str):
     total_revenue = sum(b["total"] for b in bills)
     total_items = sum(sum(i["quantity"] for i in b["items"]) for b in bills)
     
-    # Daily breakdown
     daily_data = {}
     item_counts = {}
     
@@ -410,15 +533,23 @@ async def get_sales_report_range(start_date: str, end_date: str):
         "currency": bills[0].get("currency", "EUR") if bills else "EUR"
     }
 
-# Seed menu on startup
+# Seed data on startup
 @app.on_event("startup")
-async def seed_menu():
-    count = await db.menu_items.count_documents({})
-    if count == 0:
-        for item_data in DEFAULT_MENU_ITEMS:
-            menu_item = MenuItem(**item_data)
-            await db.menu_items.insert_one(menu_item.model_dump())
-        logging.info(f"Seeded {len(DEFAULT_MENU_ITEMS)} default menu items")
+async def seed_data():
+    # Seed modifiers
+    mod_count = await db.modifiers.count_documents({})
+    if mod_count == 0:
+        for mod in DEFAULT_MODIFIERS:
+            await db.modifiers.insert_one(mod)
+        logging.info(f"Seeded {len(DEFAULT_MODIFIERS)} default modifiers")
+    
+    # Seed theme
+    theme = await db.config.find_one({"id": "theme"})
+    if not theme:
+        theme_data = DEFAULT_THEME.copy()
+        theme_data["id"] = "theme"
+        await db.config.insert_one(theme_data)
+        logging.info("Seeded default theme")
 
 @api_router.get("/")
 async def root():
