@@ -506,7 +506,7 @@ export default function Settings() {
                 </div>
                 <Dialog open={isModifierDialogOpen} onOpenChange={setIsModifierDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={openNewModifierDialog} className="bg-[#D97706] hover:bg-[#b86505]" data-testid="add-modifier-btn">
+                    <Button onClick={openNewModifierDialog} className="themed-accent-btn text-white" data-testid="add-modifier-btn">
                       <Plus className="w-4 h-4 mr-2" /> Add Modifier
                     </Button>
                   </DialogTrigger>
