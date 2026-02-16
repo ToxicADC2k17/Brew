@@ -438,8 +438,9 @@ class CafeBillGeneratorAPITester:
             print("❌ Root endpoint failed - cannot continue testing")
             return self.get_results()
 
-        # Menu tests
+        # Menu tests with 10 categories
         menu_success, menu_data = self.test_get_menu_items()
+        self.test_get_categories()
         
         # Create, read, update, delete test
         create_success, create_data = self.test_create_menu_item()
@@ -449,10 +450,15 @@ class CafeBillGeneratorAPITester:
             self.test_update_menu_item(item_id)
             self.test_delete_menu_item(item_id)
 
-        # Bill tests (requires menu items to exist)
+        # Enhanced bill tests (requires menu items to exist)
         if menu_success:
-            self.test_create_bill()
-            self.test_get_bills()
+            self.test_create_bill_enhanced()  # Test with customer info, currency, high tax
+            self.test_get_bills_with_search()  # Test search functionality
+            self.test_get_bills_with_date_filter()  # Test date filtering
+            
+        # Sales reports tests
+        self.test_get_daily_sales_report()
+        self.test_get_range_sales_report()
 
         return self.get_results()
 
