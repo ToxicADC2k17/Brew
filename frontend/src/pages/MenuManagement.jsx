@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
@@ -6,20 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Coffee, ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { Coffee, ArrowLeft, Plus, Pencil, Trash2, Upload, Image, X, Loader2 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CATEGORIES = ["Coffee", "Tea", "Pastries", "Snacks", "Beverages", "Breakfast", "Lunch", "Desserts", "Sandwiches", "Smoothies", "Starters", "Mains", "Steaks", "Seafood", "Vegetarian", "Salads", "Sides", "Soups", "Beers", "Wines"];
+const CATEGORIES = ["Coffee", "Tea", "Pastries", "Snacks", "Beverages", "Breakfast", "Lunch", "Desserts", "Sandwiches", "Smoothies", "Starters", "Mains", "Steaks", "Seafood", "Vegetarian", "Salads", "Sides", "Soups", "Beers", "Wines", "Pizza", "Pasta", "Burgers"];
 
 const emptyItem = {
   name: "",
   price: "",
   category: "Coffee",
   description: "",
+  image_url: "",
   available: true
 };
 
