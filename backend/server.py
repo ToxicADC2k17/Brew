@@ -360,6 +360,271 @@ DEFAULT_THEME = {
     "error_color": "#991B1B"
 }
 
+# Auth Helper Functions
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "hashed_password": 0})
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+async def get_current_active_user(current_user: dict = Depends(get_current_user)):
+    if not current_user.get("is_active", True):
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+def require_role(allowed_roles: List[UserRole]):
+    async def role_checker(current_user: dict = Depends(get_current_active_user)):
+        if current_user.get("role") not in [r.value for r in allowed_roles]:
+            raise HTTPException(status_code=403, detail="Not enough permissions")
+        return current_user
+    return role_checker
+
+# Auth Routes
+@api_router.post("/auth/register", response_model=Token)
+async def register(user_data: UserCreate):
+    # Check if email already exists
+    existing = await db.users.find_one({"email": user_data.email.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user
+    user = User(
+        email=user_data.email.lower(),
+        name=user_data.name,
+        role=user_data.role
+    )
+    hashed_password = get_password_hash(user_data.password)
+    
+    user_doc = user.model_dump()
+    user_doc["hashed_password"] = hashed_password
+    await db.users.insert_one(user_doc)
+    
+    # Create token
+    access_token = create_access_token(data={"sub": user.id})
+    return Token(
+        access_token=access_token,
+        user={"id": user.id, "email": user.email, "name": user.name, "role": user.role.value}
+    )
+
+@api_router.post("/auth/login", response_model=Token)
+async def login(credentials: UserLogin):
+    user = await db.users.find_one({"email": credentials.email.lower()})
+    if not user or not verify_password(credentials.password, user.get("hashed_password", "")):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    if not user.get("is_active", True):
+        raise HTTPException(status_code=400, detail="Account is deactivated")
+    
+    access_token = create_access_token(data={"sub": user["id"]})
+    return Token(
+        access_token=access_token,
+        user={"id": user["id"], "email": user["email"], "name": user["name"], "role": user["role"]}
+    )
+
+@api_router.get("/auth/me")
+async def get_me(current_user: dict = Depends(get_current_active_user)):
+    return current_user
+
+@api_router.get("/auth/users")
+async def get_users(current_user: dict = Depends(require_role([UserRole.ADMIN]))):
+    users = await db.users.find({}, {"_id": 0, "hashed_password": 0}).to_list(100)
+    return users
+
+@api_router.put("/auth/users/{user_id}/deactivate")
+async def deactivate_user(user_id: str, current_user: dict = Depends(require_role([UserRole.ADMIN]))):
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot deactivate yourself")
+    result = await db.users.update_one({"id": user_id}, {"$set": {"is_active": False}})
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deactivated"}
+
+# Supplier Routes
+@api_router.get("/suppliers")
+async def get_suppliers():
+    suppliers = await db.suppliers.find({}, {"_id": 0}).to_list(100)
+    return suppliers
+
+@api_router.post("/suppliers")
+async def create_supplier(supplier: SupplierCreate):
+    sup = Supplier(**supplier.model_dump())
+    await db.suppliers.insert_one(sup.model_dump())
+    return sup
+
+@api_router.put("/suppliers/{supplier_id}")
+async def update_supplier(supplier_id: str, update: SupplierCreate):
+    result = await db.suppliers.update_one(
+        {"id": supplier_id},
+        {"$set": update.model_dump()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    updated = await db.suppliers.find_one({"id": supplier_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/suppliers/{supplier_id}")
+async def delete_supplier(supplier_id: str):
+    result = await db.suppliers.delete_one({"id": supplier_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return {"message": "Supplier deleted"}
+
+# Inventory Routes
+@api_router.get("/inventory")
+async def get_inventory():
+    inventory = await db.inventory.find({}, {"_id": 0}).to_list(1000)
+    return inventory
+
+@api_router.get("/inventory/low-stock")
+async def get_low_stock():
+    # Find items where current_stock <= min_stock_level
+    pipeline = [
+        {"$match": {"$expr": {"$lte": ["$current_stock", "$min_stock_level"]}}},
+        {"$project": {"_id": 0}}
+    ]
+    low_stock = await db.inventory.aggregate(pipeline).to_list(100)
+    return low_stock
+
+@api_router.get("/inventory/{inventory_id}")
+async def get_inventory_item(inventory_id: str):
+    item = await db.inventory.find_one({"id": inventory_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    return item
+
+@api_router.post("/inventory")
+async def create_inventory_item(inv: InventoryCreate):
+    # Check if menu item exists
+    menu_item = await db.menu_items.find_one({"id": inv.menu_item_id})
+    if not menu_item:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    
+    # Check if inventory already exists for this menu item
+    existing = await db.inventory.find_one({"menu_item_id": inv.menu_item_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Inventory already exists for this menu item")
+    
+    # Get supplier name if provided
+    supplier_name = ""
+    if inv.supplier_id:
+        supplier = await db.suppliers.find_one({"id": inv.supplier_id})
+        supplier_name = supplier["name"] if supplier else ""
+    
+    inventory_item = InventoryItem(
+        menu_item_id=inv.menu_item_id,
+        menu_item_name=menu_item["name"],
+        current_stock=inv.current_stock,
+        min_stock_level=inv.min_stock_level,
+        max_stock_level=inv.max_stock_level,
+        cost_price=inv.cost_price,
+        supplier_id=inv.supplier_id,
+        supplier_name=supplier_name,
+        unit=inv.unit
+    )
+    await db.inventory.insert_one(inventory_item.model_dump())
+    return inventory_item
+
+@api_router.put("/inventory/{inventory_id}")
+async def update_inventory_item(inventory_id: str, update: InventoryUpdate):
+    existing = await db.inventory.find_one({"id": inventory_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    
+    # Update supplier name if supplier_id changed
+    if "supplier_id" in update_data and update_data["supplier_id"]:
+        supplier = await db.suppliers.find_one({"id": update_data["supplier_id"]})
+        update_data["supplier_name"] = supplier["name"] if supplier else ""
+    
+    if update_data:
+        await db.inventory.update_one({"id": inventory_id}, {"$set": update_data})
+    
+    updated = await db.inventory.find_one({"id": inventory_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/inventory/{inventory_id}")
+async def delete_inventory_item(inventory_id: str):
+    result = await db.inventory.delete_one({"id": inventory_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    return {"message": "Inventory item deleted"}
+
+@api_router.post("/inventory/{inventory_id}/adjust")
+async def adjust_stock(inventory_id: str, adjustment: StockAdjustment, current_user: dict = Depends(get_current_active_user)):
+    inventory = await db.inventory.find_one({"id": inventory_id})
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    previous_stock = inventory["current_stock"]
+    
+    if adjustment.transaction_type == "restock":
+        new_stock = previous_stock + adjustment.quantity
+    elif adjustment.transaction_type == "waste":
+        new_stock = max(0, previous_stock - adjustment.quantity)
+    else:  # adjustment
+        new_stock = max(0, adjustment.quantity)
+    
+    # Create transaction record
+    transaction = StockTransaction(
+        inventory_id=inventory_id,
+        menu_item_name=inventory["menu_item_name"],
+        transaction_type=adjustment.transaction_type,
+        quantity=adjustment.quantity,
+        previous_stock=previous_stock,
+        new_stock=new_stock,
+        cost_per_unit=inventory.get("cost_price", 0),
+        total_cost=adjustment.quantity * inventory.get("cost_price", 0) if adjustment.transaction_type == "restock" else None,
+        notes=adjustment.notes,
+        created_by=current_user.get("name", "")
+    )
+    await db.stock_transactions.insert_one(transaction.model_dump())
+    
+    # Update inventory
+    update_data = {"current_stock": new_stock}
+    if adjustment.transaction_type == "restock":
+        update_data["last_restocked"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.inventory.update_one({"id": inventory_id}, {"$set": update_data})
+    
+    updated = await db.inventory.find_one({"id": inventory_id}, {"_id": 0})
+    return {"inventory": updated, "transaction": transaction.model_dump()}
+
+@api_router.get("/inventory/{inventory_id}/history")
+async def get_stock_history(inventory_id: str, limit: int = Query(50, le=200)):
+    transactions = await db.stock_transactions.find(
+        {"inventory_id": inventory_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(limit)
+    return transactions
+
+@api_router.get("/stock-transactions")
+async def get_all_transactions(limit: int = Query(100, le=500)):
+    transactions = await db.stock_transactions.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    return transactions
+
 # Menu Routes
 @api_router.get("/menu", response_model=List[MenuItem])
 async def get_menu():
