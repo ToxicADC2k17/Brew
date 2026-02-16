@@ -1,0 +1,135 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "philosophy": "Fusion over Imitation. Emotion First. Content is King.",
+    "emotional_goal": "Calm Efficiency. The 'Flow State' of a Barista."
+  },
+  "typography": {
+    "headings": {
+      "family": "Manrope, sans-serif",
+      "weights": ["600", "800"],
+      "usage": "Use for all category titles, modal headers, and brand elements. Tight tracking.",
+      "import_url": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap"
+    },
+    "body": {
+      "family": "Inter, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Use for menu descriptions, receipts, and tabular data. High legibility is key.",
+      "import_url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "usage": "Use strictly for pricing, tax calculations, and the final receipt view.",
+      "import_url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+    }
+  },
+  "colors": {
+    "palette_name": "Espresso & Crema",
+    "mode": "light",
+    "base": {
+      "background": "#FDFCF8", 
+      "foreground": "#2C1A1D",
+      "card": "#FFFFFF",
+      "card_foreground": "#2C1A1D",
+      "border": "#E5E0D8"
+    },
+    "brand": {
+      "primary": "#2C1A1D",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#E8DCCA",
+      "secondary_foreground": "#2C1A1D",
+      "accent": "#D97706",
+      "accent_foreground": "#FFFFFF"
+    },
+    "semantic": {
+      "success": "#3F6212", 
+      "warning": "#B45309",
+      "destructive": "#991B1B",
+      "info": "#1D4ED8"
+    },
+    "css_vars": {
+      "--background": "48 30% 98%",
+      "--foreground": "350 25% 14%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "350 25% 14%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "350 25% 14%",
+      "--primary": "350 25% 14%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "36 30% 88%",
+      "--secondary-foreground": "350 25% 14%",
+      "--muted": "36 20% 94%",
+      "--muted-foreground": "350 10% 40%",
+      "--accent": "35 92% 44%",
+      "--accent-foreground": "0 0% 100%",
+      "--destructive": "0 84% 60%",
+      "--destructive-foreground": "0 0% 98%",
+      "--border": "36 20% 87%",
+      "--input": "36 20% 87%",
+      "--ring": "350 25% 14%",
+      "--radius": "0.5rem"
+    }
+  },
+  "layout_strategy": {
+    "spacing_scale": "Generous. Use p-6 and p-8 for containers. Gap-4 for dense grids.",
+    "container_style": "Bento Grid Mode B (High Density)",
+    "grid_config": "grid-cols-1 md:grid-cols-12 gap-6",
+    "panel_logic": {
+      "menu_area": "col-span-8",
+      "bill_area": "col-span-4 sticky top-4 h-[calc(100vh-2rem)]"
+    }
+  },
+  "components": {
+    "MenuCard": {
+      "style": "Flat card, no shadow, 1px border. Image height fixed 160px. Object-cover.",
+      "interaction": "Scale 1.02 on hover. Add button visible on hover (desktop) or always (mobile).",
+      "typography": "Title font-bold text-lg. Price font-mono text-md."
+    },
+    "BillPanel": {
+      "style": "Looks like a physical receipt. White bg, drop-shadow-md. Zig-zag border bottom (optional svg).",
+      "typography": "Font-mono for all line items."
+    },
+    "CategoryFilter": {
+      "style": "Pill shaped tabs. Active = Primary Color. Inactive = Muted bg."
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Subtle noise on the main background (opacity 0.03).",
+    "shadows": "Sharp, non-diffused shadows for buttons to feel tactile.",
+    "borders": "1px solid borders. No fuzzy edges."
+  },
+  "image_urls": {
+    "hero_login": {
+      "url": "https://images.unsplash.com/photo-1731432575185-c9200cc8f3f9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwyfHxhZXN0aGV0aWMlMjBjYWZlJTIwbGF0dGUlMjBhcnQlMjBjb2ZmZWV8ZW58MHx8fHwxNzcxMjc3MjAyfDA&ixlib=rb-4.1.0&q=85",
+      "desc": "Cups of coffee on table",
+      "category": "Login Background"
+    },
+    "menu_header": {
+      "url": "https://images.unsplash.com/photo-1736520537688-1f1f06b71605?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGJha2VyeSUyMHBhc3RyaWVzJTIwY3JvaXNzYW50JTIwZGlzcGxheXxlbnwwfHx8fDE3NzEyNzcyMDN8MA&ixlib=rb-4.1.0&q=85",
+      "desc": "Pastry display case",
+      "category": "Menu Banner"
+    },
+    "landing_hero": {
+      "url": "https://images.unsplash.com/photo-1770816307711-630029199920?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjYWZlJTIwaW50ZXJpb3IlMjBtaW5pbWFsJTIwY291bnRlcnxlbnwwfHx8fDE3NzEyNzcyMDN8MA&ixlib=rb-4.1.0&q=85",
+      "desc": "Modern cafe bar interior",
+      "category": "Landing Hero"
+    }
+  },
+  "instructions_to_main_agent": {
+    "step_1": "Update /app/frontend/src/index.css with the provided CSS variables to establish the 'Espresso & Crema' theme.",
+    "step_2": "Install fonts (Manrope, Inter, JetBrains Mono) in index.html or import in CSS.",
+    "step_3": "Build the layout using the 8/4 column split (Menu vs Bill).",
+    "step_4": "Use the provided image URLs for the Login and Main Dashboard headers.",
+    "step_5": "Ensure the Bill Panel uses a Monospace font to look like a real receipt.",
+    "step_6": "Implement 'Sonner' for toast notifications (Order added, Bill printed).",
+    "step_7": "Add data-testid to all buttons (e.g., 'add-coffee-btn', 'print-bill-btn')."
+  },
+  "universal_guidelines": [
+    "Do not use generic 'SaaS Blue'. Stick to the Earthy/Coffee palette.",
+    "Avoid gradients. Use flat colors with texture or subtle borders.",
+    "Micro-animations: Buttons should 'press' down (scale 0.95) on click.",
+    "Inputs: Use 'Shadcn Input' but style it with a 'border-b-2' only (underline style) for a cleaner look, or standard box with thick border.",
+    "All prices MUST use the Monospace font."
+  ]
+}
