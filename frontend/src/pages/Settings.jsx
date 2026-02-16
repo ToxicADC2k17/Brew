@@ -409,7 +409,7 @@ export default function Settings() {
                 </Card>
 
                 <div className="flex gap-3">
-                  <Button onClick={saveTheme} className="bg-[#D97706] hover:bg-[#b86505]" data-testid="save-theme-btn">
+                  <Button onClick={saveTheme} className="themed-accent-btn text-white" data-testid="save-theme-btn">
                     <Save className="w-4 h-4 mr-2" /> Save Theme
                   </Button>
                   <Button onClick={resetTheme} variant="outline" data-testid="reset-theme-btn">
