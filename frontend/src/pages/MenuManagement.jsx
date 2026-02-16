@@ -263,6 +263,66 @@ export default function MenuManagement() {
                       data-testid="item-description-input"
                     />
                   </div>
+                  {/* Image Upload Section */}
+                  <div className="space-y-2">
+                    <Label>Item Image</Label>
+                    <div className="border-2 border-dashed border-border rounded-lg p-4">
+                      {formData.image_url ? (
+                        <div className="relative">
+                          <img 
+                            src={formData.image_url} 
+                            alt="Preview" 
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            className="absolute top-2 right-2 h-6 w-6"
+                            onClick={removeImage}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            id="image-upload"
+                            data-testid="image-upload-input"
+                          />
+                          <label 
+                            htmlFor="image-upload" 
+                            className="cursor-pointer flex flex-col items-center gap-2 py-4"
+                          >
+                            {uploading ? (
+                              <>
+                                <Loader2 className="w-8 h-8 themed-accent animate-spin" />
+                                <span className="text-sm text-muted-foreground">Uploading...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="w-8 h-8 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">Click to upload image</span>
+                                <span className="text-xs text-muted-foreground">JPG, PNG, WebP, GIF (max 5MB)</span>
+                              </>
+                            )}
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                    <Input 
+                      value={formData.image_url}
+                      onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                      placeholder="Or paste image URL here"
+                      className="text-sm"
+                      data-testid="image-url-input"
+                    />
+                  </div>
                   <div className="flex items-center gap-3">
                     <Switch 
                       checked={formData.available}
